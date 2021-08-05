@@ -23,9 +23,11 @@ wss.on("connection", (ws, req) => {
         if (result.method === "create") {
             const clientId = result.clientId
             const partyId = result.partyId
+            const src = result.src
 
             parties[partyId] = {
                 "id": partyId,
+                "src": src,
                 "playhead": 0
             }
 
@@ -37,12 +39,11 @@ wss.on("connection", (ws, req) => {
             const con = clients[clientId].connection
             con.send(JSON.stringify(payload))
             console.log("payload sent")
-            console.log(JSON.stringify(payload))
 
         }
     })
 
-    // Get client ID and nickname from req
+    // Get client ID from req
     const clientId = req.url.substring(1)
     clients[clientId] = {
         "connection": ws,
