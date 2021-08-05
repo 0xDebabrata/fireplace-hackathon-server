@@ -28,7 +28,8 @@ wss.on("connection", (ws, req) => {
             parties[partyId] = {
                 "id": partyId,
                 "src": src,
-                "playhead": 0
+                "playhead": 0,
+                "clients": []
             }
 
             const payload = {
@@ -41,13 +42,47 @@ wss.on("connection", (ws, req) => {
             console.log("payload sent")
 
         }
+
+        // User wants to join watchparty
+        if (result.method === "join") {
+            const clientId = result.clientId
+            const partyId = result.partyId
+
+            const party = parties[partyId]
+
+            if (party.clients.length >= 5) {
+                // Send room filled notification
+                return;
+            }
+
+            party.clients.push(clientId)
+
+            const payload = {
+                "method": "join",
+                "party": party
+            }
+
+            // Notify everyone that a player has joined
+            party.clients.forEach(c => {
+                clients[c].connection.send(JSON.stringify(payload))
+            })
+
+            const con = clients[clientId].connection
+            con.send(JSON.stringify(payload))
+            console.log("payload sent")
+
+        }
+
     })
 
     // Get client ID from req
     const clientId = req.url.substring(1)
+    console.log("clientId", clientId)
+
     clients[clientId] = {
         "connection": ws,
     }
+
 })
 
 
