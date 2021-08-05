@@ -39,7 +39,7 @@ wss.on("connection", (ws, req) => {
 
             const con = clients[clientId].connection
             con.send(JSON.stringify(payload))
-            console.log("payload sent")
+            console.log("create response sent")
 
         }
 
@@ -47,37 +47,67 @@ wss.on("connection", (ws, req) => {
         if (result.method === "join") {
             const clientId = result.clientId
             const partyId = result.partyId
+            const nickname = result.nickname
+
+            console.log(nickname + "joined")
+
+            clients[clientId]["nickname"] = nickname
 
             const party = parties[partyId]
 
-            if (party.clients.length >= 5) {
+            //if (party.clients.length >= 5) {
                 // Send room filled notification
-                return;
+             //   return;
+            //}
+
+            if (!party.clients.includes(clientId)) {
+                party.clients.push(clientId)
             }
 
-            party.clients.push(clientId)
-
-            const payload = {
+            const payloadToJoiningClient = {
                 "method": "join",
                 "party": party
             }
 
+            const payloadToJoinedClients = {
+                "method": "new",
+                "nickname": nickname
+            }
+
             // Notify everyone that a player has joined
             party.clients.forEach(c => {
-                clients[c].connection.send(JSON.stringify(payload))
+                if (c === clientId) {
+                    clients[c].connection.send(JSON.stringify(payloadToJoiningClient))
+                } else {
+                    clients[c].connection.send(JSON.stringify(payloadToJoinedClients))
+                }
             })
 
-            const con = clients[clientId].connection
-            con.send(JSON.stringify(payload))
-            console.log("payload sent")
+        }
 
+        // User left watchparty
+        if (result.method === "leave") {
+            const clientId = result.clientId
+            const partyId = result.partyId
+
+            const party = parties[partyId]
+
+            const payload = {
+                "method": "leave",
+                "nickname": clients[clientId].nickname
+            }
+
+            party.clients.forEach(c => {
+                if (c !== clientId) {
+                    clients[c].connection.send(JSON.stringify(payload))
+                }
+            })
         }
 
     })
 
     // Get client ID from req
     const clientId = req.url.substring(1)
-    console.log("clientId", clientId)
 
     clients[clientId] = {
         "connection": ws,
