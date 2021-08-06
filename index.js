@@ -176,7 +176,6 @@ wss.on("connection", (ws, req) => {
             const playhead = result.playhead
 
             parties[partyId].playhead = playhead
-            console.log("playhead " + playhead)
         }
 
 
