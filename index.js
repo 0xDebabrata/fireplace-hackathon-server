@@ -170,6 +170,16 @@ wss.on("connection", (ws, req) => {
             })
         }
 
+        // Update playhead state
+        if (result.method === "update") {
+            const partyId = result.partyId
+            const playhead = result.playhead
+
+            parties[partyId].playhead = playhead
+            console.log("playhead " + playhead)
+        }
+
+
     })
 
     // Get client ID from req
