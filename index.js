@@ -1,6 +1,7 @@
 import { createServer } from "http"
 import { WebSocketServer } from "ws"
 
+const PORT = process.env.PORT || 3000
 const server = createServer()
 const wss = new WebSocketServer({ server })
 
@@ -8,8 +9,8 @@ const wss = new WebSocketServer({ server })
 const clients = {}
 const parties = {}
 
-server.listen("8080", () => {
-    console.log("Server listening on port 8080")
+server.listen(PORT, () => {
+    console.log("Server listening on port " + PORT)
 })
 
 wss.on("connection", (ws, req) => {
