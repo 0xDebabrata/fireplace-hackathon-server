@@ -150,6 +150,26 @@ wss.on("connection", (ws, req) => {
 
         }
 
+        // Creator has seeked video
+        if (result.method === "seeked") {
+            const clientId = result.clientId
+            const partyId = result.partyId
+            const playhead = result.playhead
+
+            const party = parties[partyId]
+
+            const payload = {
+                "method": "seeked",
+                "playhead": playhead
+            }
+
+            party.clients.forEach(c => {
+                if (c !== clientId) {
+                    clients[c].connection.send(JSON.stringify(payload))
+                }
+            })
+        }
+
     })
 
     // Get client ID from req
