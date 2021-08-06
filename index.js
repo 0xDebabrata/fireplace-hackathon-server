@@ -13,8 +13,33 @@ server.listen("8080", () => {
 })
 
 wss.on("connection", (ws, req) => {
+
+    let currentPartyId
+
     ws.on("open", () => console.log("connection opened"))
-    ws.on("close", () => console.log("connection closed"))
+    ws.on("close", () => {
+
+        if (clientId && currentPartyId) {
+            const party = parties[currentPartyId]
+
+            const payload = {
+                "method": "leave",
+                "nickname": clients[clientId].nickname
+            }
+
+            party.clients.forEach(c => {
+                if (c !== clientId) {
+                    clients[c].connection.send(JSON.stringify(payload))
+                }
+            })
+
+            console.log("leave payload sent")
+
+        } else {
+            return
+        }
+    })
+
     ws.on("message", message => {
         // Message from client
         const result = JSON.parse(`${message}`)
@@ -49,7 +74,9 @@ wss.on("connection", (ws, req) => {
             const partyId = result.partyId
             const nickname = result.nickname
 
-            console.log(nickname + "joined")
+            currentPartyId = partyId
+
+            console.log(nickname + " joined " + currentPartyId)
 
             clients[clientId]["nickname"] = nickname
 
@@ -83,25 +110,6 @@ wss.on("connection", (ws, req) => {
                 }
             })
 
-        }
-
-        // User left watchparty
-        if (result.method === "leave") {
-            const clientId = result.clientId
-            const partyId = result.partyId
-
-            const party = parties[partyId]
-
-            const payload = {
-                "method": "leave",
-                "nickname": clients[clientId].nickname
-            }
-
-            party.clients.forEach(c => {
-                if (c !== clientId) {
-                    clients[c].connection.send(JSON.stringify(payload))
-                }
-            })
         }
 
     })
