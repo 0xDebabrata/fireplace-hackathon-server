@@ -112,6 +112,44 @@ wss.on("connection", (ws, req) => {
 
         }
 
+        // Creator has played video
+        if (result.method === "play") {
+            const clientId = result.clientId
+            const partyId = result.partyId
+
+            const party = parties[partyId]
+
+            const payload = {
+                "method": "play",
+            }
+
+            party.clients.forEach(c => {
+                if (c !== clientId) {
+                    clients[c].connection.send(JSON.stringify(payload))
+                }
+            })
+
+        }
+
+        // Creator has paused video
+        if (result.method === "pause") {
+            const clientId = result.clientId
+            const partyId = result.partyId
+
+            const party = parties[partyId]
+
+            const payload = {
+                "method": "pause",
+            }
+
+            party.clients.forEach(c => {
+                if (c !== clientId) {
+                    clients[c].connection.send(JSON.stringify(payload))
+                }
+            })
+
+        }
+
     })
 
     // Get client ID from req
