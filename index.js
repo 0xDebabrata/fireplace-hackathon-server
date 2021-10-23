@@ -20,6 +20,7 @@ wss.on("connection", (ws, req) => {
     ws.on("open", () => console.log("connection opened"))
     ws.on("close", () => {
 
+        // Send client left message to watchparty members
         if (clientId && currentPartyId) {
             const party = parties[currentPartyId]
 
@@ -102,7 +103,7 @@ wss.on("connection", (ws, req) => {
                 "nickname": nickname
             }
 
-            // Notify everyone that a player has joined
+            // Notify everyone that a member has joined
             party.clients.forEach(c => {
                 if (c === clientId) {
                     clients[c].connection.send(JSON.stringify(payloadToJoiningClient))
@@ -178,7 +179,6 @@ wss.on("connection", (ws, req) => {
 
             parties[partyId].playhead = playhead
         }
-
 
     })
 
